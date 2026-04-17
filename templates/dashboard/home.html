@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | ArticleHub{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1">Административная панель</h1>
+        <p class="text-muted mb-0">Управление пользователями, контентом и статистикой платформы.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-dark" href="{% url 'dashboard:statistics' %}">Статистика</a>
+        <a class="btn btn-dark" href="{% url 'dashboard:export' %}">Выгрузка</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card border-0 shadow-sm stat-card"><div class="card-body"><div class="small text-muted">Всего статей</div><div class="display-6">{{ articles_total }}</div></div></div></div>
+    <div class="col-md-3"><div class="card border-0 shadow-sm stat-card"><div class="card-body"><div class="small text-muted">Опубликовано</div><div class="display-6">{{ published_total }}</div></div></div></div>
+    <div class="col-md-3"><div class="card border-0 shadow-sm stat-card"><div class="card-body"><div class="small text-muted">Черновики</div><div class="display-6">{{ draft_total }}</div></div></div></div>
+    <div class="col-md-3"><div class="card border-0 shadow-sm stat-card"><div class="card-body"><div class="small text-muted">Авторов</div><div class="display-6">{{ authors_total }}</div></div></div></div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h4 mb-3">Топ публикаций</h2>
+                {% for article in top_articles %}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <a class="fw-semibold text-decoration-none d-block" href="{{ article.get_absolute_url }}">{{ article.title }}</a>
+                        <small class="text-muted">Рейтинг {{ article.rating|default:0 }} · Просмотры {{ article.views_count }}</small>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h4 mb-3">Последние комментарии</h2>
+                {% for comment in recent_comments %}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="fw-semibold">{{ comment.author.username }} → {{ comment.article.title }}</div>
+                        <div class="text-muted small">{{ comment.text|truncatechars:100 }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

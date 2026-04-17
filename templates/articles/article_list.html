@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }} | ArticleHub{% endblock %}
+
+{% block content %}
+<section class="mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3 mb-4">
+        <div>
+            <h1 class="mb-1">{{ page_title }}</h1>
+            <p class="text-muted mb-0">Поиск, фильтрация и сортировка материалов по категориям, тегам и авторам.</p>
+        </div>
+        {% if request.user.is_authenticated and request.user.is_author %}
+            <a class="btn btn-dark" href="{% url 'articles:create' %}">Новая статья</a>
+        {% endif %}
+    </div>
+
+    <form class="card border-0 shadow-sm mb-4" method="get">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-lg-4">
+                    <label class="form-label">Поиск</label>
+                    <input class="form-control" type="text" name="query" value="{{ request.GET.query }}" placeholder="Заголовок или содержимое">
+                </div>
+                <div class="col-md-4 col-lg-2">
+                    <label class="form-label">Категория</label>
+                    <select class="form-select" name="category">
+                        <option value="">Все</option>
+                        {% for category in categories %}
+                            <option value="{{ category.slug }}" {% if request.GET.category == category.slug %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 col-lg-2">
+                    <label class="form-label">Тег</label>
+                    <select class="form-select" name="tag">
+                        <option value="">Все</option>
+                        {% for tag in tags %}
+                            <option value="{{ tag.slug }}" {% if request.GET.tag == tag.slug %}selected{% endif %}>{{ tag.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 col-lg-2">
+                    <label class="form-label">Автор</label>
+                    <input class="form-control" type="text" name="author" value="{{ request.GET.author }}" placeholder="username">
+                </div>
+                <div class="col-md-6 col-lg-2">
+                    <label class="form-label">Сортировка</label>
+                    <select class="form-select" name="sort">
+                        <option value="newest" {% if request.GET.sort == 'newest' or not request.GET.sort %}selected{% endif %}>Сначала новые</option>
+                        <option value="oldest" {% if request.GET.sort == 'oldest' %}selected{% endif %}>Сначала старые</option>
+                        <option value="rating" {% if request.GET.sort == 'rating' %}selected{% endif %}>По рейтингу</option>
+                        <option value="comments" {% if request.GET.sort == 'comments' %}selected{% endif %}>По комментариям</option>
+                        <option value="views" {% if request.GET.sort == 'views' %}selected{% endif %}>По просмотрам</option>
+                    </select>
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-dark" type="submit">Применить</button>
+                <a class="btn btn-outline-secondary" href="{% url 'articles:list' %}">Сбросить</a>
+            </div>
+        </div>
+    </form>
+</section>
+
+<section>
+    <div class="row g-4">
+        {% for article in articles %}
+            <div class="col-md-6 col-xl-4">{% include 'includes/article_card.html' %}</div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-light border">По вашему запросу статьи не найдены.</div>
+            </div>
+        {% endfor %}
+    </div>
+    {% include 'includes/pagination.html' %}
+</section>
+{% endblock %}

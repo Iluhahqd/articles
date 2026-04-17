@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Профиль | ArticleHub{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                {% if profile_user.avatar %}
+                    <img class="rounded-circle mb-3" src="{{ profile_user.avatar.url }}" alt="{{ profile_user.username }}" width="96" height="96">
+                {% else %}
+                    <div class="avatar-placeholder rounded-circle mb-3">{{ profile_user.username|slice:":1"|upper }}</div>
+                {% endif %}
+                <h1 class="h3 mb-1">{{ profile_user.get_full_name|default:profile_user.username }}</h1>
+                <div class="text-muted mb-3">@{{ profile_user.username }} · {{ profile_user.get_role_display }}</div>
+                <p class="mb-4">{{ profile_user.bio|default:"Пользователь пока не добавил описание." }}</p>
+                <div class="d-grid gap-2">
+                    <a class="btn btn-dark" href="{% url 'users:profile_edit' %}">Редактировать профиль</a>
+                    <a class="btn btn-outline-secondary" href="{% url 'users:password_change' %}">Сменить пароль</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm stat-card"><div class="card-body"><div class="small text-muted">Статей</div><div class="display-6">{{ articles_total }}</div></div></div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm stat-card"><div class="card-body"><div class="small text-muted">Публикаций</div><div class="display-6">{{ published_total }}</div></div></div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm stat-card"><div class="card-body"><div class="small text-muted">Избранное</div><div class="display-6">{{ favorites_total }}</div></div></div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm stat-card"><div class="card-body"><div class="small text-muted">Просмотры</div><div class="display-6">{{ author_rankings.total_views|default:0 }}</div></div></div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h4 mb-3">Последние материалы</h2>
+                {% for article in recent_articles %}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <a class="fw-semibold text-decoration-none d-block" href="{{ article.get_absolute_url }}">{{ article.title }}</a>
+                        <small class="text-muted">{{ article.get_status_display }} · {{ article.updated_at|date:"d.m.Y H:i" }}</small>
+                    </div>
+                {% empty %}
+                    <div class="text-muted">Вы пока не создавали статей.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Выгрузка данных | ArticleHub{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="h3 mb-3">Выгрузка данных</h1>
+                <p class="text-muted">На этой странице администратор может выгружать список статей в CSV. Архитектура проекта допускает дальнейшее добавление PDF-экспорта одной статьи через отдельный сервис.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-dark" href="{% url 'articles:export_csv' %}">Скачать CSV со статьями</a>
+                    <a class="btn btn-outline-secondary" href="{% url 'dashboard:statistics' %}">Вернуться к статистике</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

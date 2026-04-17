@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактирование комментария | ArticleHub{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="h3 mb-3">Редактирование комментария</h1>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button class="btn btn-dark" type="submit">Сохранить</button>
+                    <a class="btn btn-outline-secondary" href="{{ object.article.get_absolute_url }}">Отмена</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
