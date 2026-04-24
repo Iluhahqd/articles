@@ -3,7 +3,7 @@
 {% block title %}{{ page_title }} | ArticleHub{% endblock %}
 
 {% block content %}
-<section class="mb-4">
+<section class="mb-4" data-reveal>
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3 mb-4">
         <div>
             <h1 class="mb-1">{{ page_title }}</h1>
@@ -62,7 +62,7 @@
     </form>
 </section>
 
-<section>
+<section data-reveal>
     <div class="row g-4">
         {% for article in articles %}
             <div class="col-md-6 col-xl-4">{% include 'includes/article_card.html' %}</div>

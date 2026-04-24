@@ -1,45 +1,82 @@
 {% extends 'base.html' %}
+{% load rich_text static %}
 
 {% block title %}{{ article.title }} | ArticleHub{% endblock %}
 
 {% block content %}
 <article class="row g-5">
     <div class="col-lg-8">
-        <div class="mb-4">
+        <div class="mb-4" data-reveal>
             {% if article.category %}
                 <a class="badge text-bg-light text-decoration-none mb-3" href="{{ article.category.get_absolute_url }}">{{ article.category.name }}</a>
             {% else %}
                 <span class="badge text-bg-light mb-3">Без категории</span>
             {% endif %}
             <h1 class="display-6 mb-3">{{ article.title }}</h1>
-            <div class="d-flex flex-wrap gap-3 text-muted small">
-                <span>Автор: <a class="text-decoration-none" href="{% url 'articles:author_detail' article.author.username %}">@{{ article.author.username }}</a></span>
-                <span>Дата: {{ article.published_at|date:"d.m.Y H:i"|default:article.created_at|date:"d.m.Y H:i" }}</span>
-                <span>Просмотры: {{ article.views_count }}</span>
-                <span>Рейтинг: {{ article.rating|default:0 }}</span>
+            <p class="lead text-secondary mb-4">{{ article.short_description }}</p>
+            <div class="article-meta-grid">
+                <div class="article-meta-card">
+                    <div class="small text-muted">Автор</div>
+                    <div class="fw-semibold"><a class="text-decoration-none" href="{% url 'articles:author_detail' article.author.username %}">@{{ article.author.username }}</a></div>
+                </div>
+                <div class="article-meta-card">
+                    <div class="small text-muted">Публикация</div>
+                    <div class="fw-semibold">{{ article.published_at|date:"d.m.Y H:i"|default:article.created_at|date:"d.m.Y H:i" }}</div>
+                </div>
+                <div class="article-meta-card">
+                    <div class="small text-muted">Время чтения</div>
+                    <div class="fw-semibold">{{ article.reading_time }} мин</div>
+                </div>
+                <div class="article-meta-card">
+                    <div class="small text-muted">Метрики</div>
+                    <div class="fw-semibold">{{ article.views_count }} просмотров · {{ article.rating|default:0 }} рейтинг</div>
+                </div>
             </div>
         </div>
 
-        {% if article.cover_image %}
-            <img class="img-fluid rounded-4 mb-4 shadow-sm" src="{{ article.cover_image.url }}" alt="{{ article.title }}">
+        <div class="article-hero-cover mb-4" data-reveal>
+            {% if article.cover_image %}
+                <img src="{{ article.cover_image.url }}" alt="{{ article.title }}">
+            {% elif article.cover_image_url %}
+                <img src="{{ article.cover_image_url }}" alt="{{ article.title }}" loading="lazy" referrerpolicy="no-referrer">
+            {% else %}
+                <img src="{% static article.placeholder_cover %}" alt="{{ article.title }}">
+            {% endif %}
+            <div class="article-hero-content">
+                <span class="cover-kicker mb-3">{{ article.category.name|default:"Редакционный материал" }}</span>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for tag in article.tags.all %}
+                        <a class="cover-reading text-decoration-none text-white" href="{{ tag.get_absolute_url }}">#{{ tag.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% if article.cover_image_credit or article.cover_image_source_url %}
+            <div class="article-photo-credit mb-4" data-reveal>
+                Фото:
+                {% if article.cover_image_source_url %}
+                    <a href="{{ article.cover_image_source_url }}" target="_blank" rel="noopener noreferrer">{{ article.cover_image_credit|default:"источник" }}</a>
+                {% else %}
+                    <span>{{ article.cover_image_credit }}</span>
+                {% endif %}
+            </div>
         {% endif %}
 
-        <div class="article-content mb-4">
-            <p class="lead">{{ article.short_description }}</p>
-            {{ article.content|linebreaks }}
+        <div class="article-content mb-4" data-reveal>
+            {{ article.content|richtext }}
         </div>
 
-        <div class="d-flex flex-wrap gap-2 mb-4">
+        <div class="d-flex flex-wrap gap-2 mb-4" data-reveal>
             {% for tag in article.tags.all %}
                 <a class="badge rounded-pill text-bg-secondary text-decoration-none" href="{{ tag.get_absolute_url }}">#{{ tag.name }}</a>
             {% endfor %}
         </div>
 
-        <div class="card border-0 shadow-sm mb-5">
+        <div class="card border-0 shadow-sm mb-5" data-reveal>
             <div class="card-body d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
                 <div>
                     <h2 class="h5 mb-1">Оцените публикацию</h2>
-                    <div class="text-muted small">Лайки и дизлайки влияют на общий рейтинг статьи.</div>
+                    <div class="text-muted small">Лайки и дизлайки влияют на общий рейтинг статьи, а избранное помогает возвращаться к материалу позже.</div>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
                     {% if request.user.is_authenticated %}
@@ -58,16 +95,17 @@
                             <button class="btn btn-dark" type="submit">{% if is_favorite %}Убрать из избранного{% else %}В избранное{% endif %}</button>
                         </form>
                     {% else %}
-                        <a class="btn btn-dark" href="{% url 'users:login' %}">Войдите, чтобы голосовать</a>
+                        <a class="btn btn-dark" href="{% url 'users:login' %}">Войдите, чтобы взаимодействовать</a>
                     {% endif %}
+                    <button class="btn btn-outline-secondary" type="button" data-copy-link>Скопировать ссылку</button>
                 </div>
             </div>
         </div>
 
-        <section>
+        <section data-reveal>
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="h4 mb-0">Комментарии</h2>
-                <span class="text-muted">{{ comments|length }} одобренных комментариев</span>
+                <span class="text-muted">{{ comments|length }} комментариев</span>
             </div>
 
             {% if request.user.is_authenticated %}
@@ -98,7 +136,7 @@
                                 </div>
                             </div>
                             {% if request.user == comment.author or request.user.is_admin %}
-                                <div class="d-flex gap-2">
+                                <div class="d-flex gap-2 flex-wrap">
                                     <a class="btn btn-sm btn-outline-secondary" href="{% url 'comments:edit' comment.pk %}">Редактировать</a>
                                     <a class="btn btn-sm btn-outline-danger" href="{% url 'comments:delete' comment.pk %}">Удалить</a>
                                     {% if request.user.is_admin %}
@@ -121,7 +159,18 @@
         </section>
     </div>
 
-    <aside class="col-lg-4">
+    <aside class="col-lg-4" data-reveal>
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-3">О материале</h2>
+                <div class="small text-muted mb-3">Материал оформлен как оригинальная редакционная статья. В проекте для части публикаций используются лицензируемые фото с указанием источника.</div>
+                <div class="d-grid gap-2">
+                    <a class="btn btn-outline-dark" href="{% url 'articles:author_detail' article.author.username %}">Профиль автора</a>
+                    <a class="btn btn-outline-secondary" href="{% url 'articles:list' %}">Все статьи</a>
+                </div>
+            </div>
+        </div>
+
         {% if request.user == article.author or request.user.is_admin %}
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body">
@@ -133,13 +182,14 @@
                 </div>
             </div>
         {% endif %}
+
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <h2 class="h5 mb-3">Похожие материалы</h2>
                 {% for related in related_articles %}
                     <div class="mb-3 pb-3 border-bottom">
                         <a class="text-decoration-none fw-semibold d-block" href="{{ related.get_absolute_url }}">{{ related.title }}</a>
-                        <small class="text-muted">Рейтинг {{ related.rating|default:0 }} · {{ related.views_count }} просмотров</small>
+                        <small class="text-muted">{{ related.reading_time }} мин · рейтинг {{ related.rating|default:0 }} · {{ related.views_count }} просмотров</small>
                     </div>
                 {% empty %}
                     <div class="text-muted">Похожие статьи появятся позже.</div>

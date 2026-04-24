@@ -1,15 +1,16 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Главная | ArticleHub{% endblock %}
 
 {% block content %}
-<section class="hero-surface rounded-4 p-4 p-lg-5 mb-5">
+<section class="hero-surface rounded-4 p-4 p-lg-5 mb-5" data-reveal>
     <div class="row align-items-center g-4">
         <div class="col-lg-7">
-            <span class="badge bg-dark mb-3">Платформа публикации статей</span>
-            <h1 class="display-5 mb-3">Публикации, комментарии, рейтинг и роли пользователей в одном Django-проекте</h1>
-            <p class="lead text-secondary mb-4">ArticleHub подходит для демонстрации аутентификации, авторизации, CRUD, аналитики, загрузки файлов и административного интерфейса.</p>
-            <form class="row g-2" method="get" action="{% url 'articles:list' %}">
+            <span class="section-label">Платформа публикации статей</span>
+            <h1 class="display-5 mb-3">Контентная платформа для статей, обсуждений и аналитики, которую не стыдно показывать на защите</h1>
+            <p class="lead text-secondary mb-4">ArticleHub объединяет редакторскую часть, роли пользователей, систему рейтинга, избранное, комментарии с модерацией и продуманную административную панель.</p>
+            <form class="row g-2 mb-4" method="get" action="{% url 'articles:list' %}">
                 <div class="col-md-8">
                     <input class="form-control form-control-lg" type="search" name="query" placeholder="Найти статью по заголовку или содержимому">
                 </div>
@@ -17,26 +18,58 @@
                     <button class="btn btn-dark btn-lg w-100" type="submit">Искать</button>
                 </div>
             </form>
+            <div class="metric-strip">
+                {% for metric in platform_metrics %}
+                    <div class="metric-card">
+                        <strong>{{ metric.value }}</strong>
+                        <span class="text-muted">{{ metric.label }}</span>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
         <div class="col-lg-5">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body p-4">
-                    <h2 class="h5 mb-3">Что уже есть в проекте</h2>
-                    <ul class="mb-0 text-secondary">
-                        <li>Регистрация, вход, смена и восстановление пароля</li>
-                        <li>Роли пользователя, автора и администратора</li>
-                        <li>Статьи, комментарии, лайки, дизлайки и избранное</li>
-                        <li>Аналитика, экспорт CSV, Docker и PostgreSQL</li>
-                    </ul>
-                </div>
-            </div>
+            {% if hero_article %}
+                <a class="feature-link card border-0 shadow-sm rounded-4 h-100" href="{{ hero_article.get_absolute_url }}">
+                    {% if hero_article.cover_image %}
+                        <img src="{{ hero_article.cover_image.url }}" class="article-cover" alt="{{ hero_article.title }}">
+                    {% elif hero_article.cover_image_url %}
+                        <div class="article-cover article-cover-remote">
+                            <img src="{{ hero_article.cover_image_url }}" class="article-cover-art" alt="{{ hero_article.title }}" loading="lazy" referrerpolicy="no-referrer">
+                            <div class="article-cover-overlay">
+                                <span class="cover-kicker">Материал недели</span>
+                                <span class="cover-reading">{{ hero_article.reading_time }} мин чтения</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="article-cover article-cover-fallback cover-theme-{{ hero_article.cover_theme }}">
+                            <img src="{% static hero_article.placeholder_cover %}" class="article-cover-art" alt="{{ hero_article.title }}">
+                            <div class="article-cover-overlay">
+                                <span class="cover-kicker">Материал недели</span>
+                                <span class="cover-reading">{{ hero_article.reading_time }} мин чтения</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <div class="card-body p-4">
+                        <div class="text-muted small mb-2">{{ hero_article.category.name|default:"Редакционный материал" }}</div>
+                        <h2 class="h3 mb-3">{{ hero_article.title }}</h2>
+                        <p class="text-muted mb-3">{{ hero_article.short_description }}</p>
+                        <div class="d-flex justify-content-between small text-muted">
+                            <span>@{{ hero_article.author.username }}</span>
+                            <span>{{ hero_article.views_count }} просмотров · рейтинг {{ hero_article.rating|default:0 }}</span>
+                        </div>
+                    </div>
+                </a>
+            {% endif %}
         </div>
     </div>
 </section>
 
-<section class="mb-5">
+<section class="mb-5" data-reveal>
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="h3 mb-0">Последние статьи</h2>
+        <div>
+            <span class="section-label">Свежая лента</span>
+            <h2 class="h3 mb-0">Последние статьи</h2>
+        </div>
         <a class="btn btn-outline-dark" href="{% url 'articles:list' %}">Все статьи</a>
     </div>
     <div class="row g-4">
@@ -50,7 +83,60 @@
     </div>
 </section>
 
-<section class="row g-4">
+<section class="row g-4 mb-5" data-reveal>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <span class="section-label">Подборка</span>
+                <h2 class="h4 mb-3">Редакционные рекомендации</h2>
+                {% for article in featured_articles %}
+                    <a class="feature-link" href="{{ article.get_absolute_url }}">
+                        <div class="fw-semibold mb-1">{{ article.title }}</div>
+                        <div class="text-muted small">{{ article.short_description|truncatechars:120 }}</div>
+                    </a>
+                {% empty %}
+                    <div class="text-muted">Подборка появится после публикации материалов.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <span class="section-label">Авторы</span>
+                <h2 class="h4 mb-3">Активные авторы</h2>
+                {% for author in featured_authors %}
+                    <div class="author-spotlight mb-3">
+                        <div class="fw-semibold">{{ author.get_full_name|default:author.username }}</div>
+                        <div class="text-muted small mb-2">@{{ author.username }}</div>
+                        <div class="small text-muted">{{ author.published_total }} публикаций · {{ author.total_views|default:0 }} просмотров</div>
+                    </div>
+                {% empty %}
+                    <div class="text-muted">Авторы появятся после публикации контента.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <span class="section-label">Обсуждение</span>
+                <h2 class="h4 mb-3">Свежие комментарии</h2>
+                {% for comment in recent_comments %}
+                    <div class="discussion-item">
+                        <div class="fw-semibold">{{ comment.author.username }}</div>
+                        <a class="text-decoration-none d-block mb-1" href="{{ comment.article.get_absolute_url }}">{{ comment.article.title }}</a>
+                        <div class="text-muted small">{{ comment.text|truncatechars:110 }}</div>
+                    </div>
+                {% empty %}
+                    <div class="text-muted">Пока нет опубликованных обсуждений.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-4 mb-5" data-reveal>
     <div class="col-lg-4">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
@@ -80,13 +166,12 @@
     <div class="col-lg-4">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
-                <h2 class="h4 mb-3">Теги</h2>
-                <div class="d-flex flex-wrap gap-2">
+                <h2 class="h4 mb-3">Теги и тренды</h2>
+                <div class="d-flex flex-wrap gap-2 mb-4">
                     {% for tag in tags %}
                         <a class="badge rounded-pill text-bg-light text-decoration-none border px-3 py-2" href="{{ tag.get_absolute_url }}">#{{ tag.name }}</a>
                     {% endfor %}
                 </div>
-                <hr>
                 <h3 class="h5">Самые обсуждаемые</h3>
                 {% for article in discussed_articles %}
                     <div class="mb-2">
@@ -95,6 +180,24 @@
                     </div>
                 {% endfor %}
             </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-panel p-4 p-lg-5" data-reveal>
+    <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+            <span class="section-label bg-white text-dark">Новый материал</span>
+            <h2 class="display-6 mb-3">Платформа уже готова для публикаций, обсуждений и управляемого роста</h2>
+            <p class="mb-0 text-white-50">Можно использовать проект как уверенную базу для курсовой: запуск через Docker, роли пользователей, аналитика, экспорт и аккуратный интерфейс уже на месте.</p>
+        </div>
+        <div class="col-lg-4 d-flex flex-wrap gap-2 justify-content-lg-end">
+            <a class="btn btn-light btn-lg" href="{% url 'articles:list' %}">Читать статьи</a>
+            {% if request.user.is_authenticated and request.user.is_author %}
+                <a class="btn btn-outline-light btn-lg" href="{% url 'articles:create' %}">Создать статью</a>
+            {% else %}
+                <a class="btn btn-outline-light btn-lg" href="{% url 'users:register' %}">Присоединиться</a>
+            {% endif %}
         </div>
     </div>
 </section>

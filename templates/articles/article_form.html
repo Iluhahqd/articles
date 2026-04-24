@@ -15,6 +15,9 @@
         <form class="card border-0 shadow-sm" method="post" enctype="multipart/form-data">
             <div class="card-body p-4">
                 {% csrf_token %}
+                <div class="alert alert-light border">
+                    Можно использовать локально загруженную обложку или внешнее изображение по URL. Для внешней обложки лучше сразу заполнить автора фото и ссылку на источник.
+                </div>
                 {{ form.as_p }}
             </div>
             <div class="card-footer bg-white border-0 px-4 pb-4">

@@ -3,7 +3,7 @@
 {% block title %}Мои статьи | ArticleHub{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4" data-reveal>
     <div>
         <h1 class="mb-1">Мои статьи</h1>
         <p class="text-muted mb-0">Здесь отображаются все ваши публикации и черновики.</p>
@@ -11,7 +11,7 @@
     <a class="btn btn-dark" href="{% url 'articles:create' %}">Создать статью</a>
 </div>
 
-<div class="card border-0 shadow-sm">
+<div class="card border-0 shadow-sm" data-reveal>
     <div class="table-responsive">
         <table class="table align-middle mb-0">
             <thead class="table-light">

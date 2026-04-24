@@ -25,6 +25,43 @@ class ArticleAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     autocomplete_fields = ("author", "category", "tags")
     date_hierarchy = "published_at"
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "title",
+                    "slug",
+                    "short_description",
+                    "content",
+                    "status",
+                    "author",
+                    "category",
+                    "tags",
+                )
+            },
+        ),
+        (
+            "Обложка",
+            {
+                "fields": (
+                    "cover_image",
+                    "cover_image_url",
+                    "cover_image_credit",
+                    "cover_image_source_url",
+                )
+            },
+        ),
+        (
+            "Метаданные",
+            {
+                "fields": (
+                    "published_at",
+                    "views_count",
+                )
+            },
+        ),
+    )
 
 
 @admin.register(Vote)

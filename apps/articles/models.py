@@ -1,4 +1,5 @@
 from django.conf import settings
+from math import ceil
 from django.db import models
 from django.db.models import Count, Q, Sum
 from django.urls import reverse
@@ -68,6 +69,15 @@ class ArticleQuerySet(models.QuerySet):
 
 
 class Article(models.Model):
+    COVER_THEMES = (
+        "copper",
+        "forest",
+        "ocean",
+        "ember",
+        "plum",
+        "graphite",
+    )
+
     class Status(models.TextChoices):
         DRAFT = "draft", "Черновик"
         PUBLISHED = "published", "Опубликовано"
@@ -77,6 +87,9 @@ class Article(models.Model):
     short_description = models.CharField("Краткое описание", max_length=300)
     content = models.TextField("Содержание")
     cover_image = models.ImageField("Обложка", upload_to="covers/", blank=True, null=True)
+    cover_image_url = models.URLField("Внешняя обложка", blank=True)
+    cover_image_credit = models.CharField("Автор фото", max_length=160, blank=True)
+    cover_image_source_url = models.URLField("Ссылка на источник фото", blank=True)
     status = models.CharField("Статус", max_length=20, choices=Status.choices, default=Status.DRAFT)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="articles", verbose_name="Автор")
     category = models.ForeignKey("Category", on_delete=models.SET_NULL, blank=True, null=True, related_name="articles", verbose_name="Категория")
@@ -107,6 +120,24 @@ class Article(models.Model):
 
     def get_absolute_url(self):
         return reverse("articles:detail", kwargs={"slug": self.slug})
+
+    @property
+    def reading_time(self):
+        words = len(self.content.split())
+        return max(1, ceil(words / 220))
+
+    @property
+    def cover_theme(self):
+        seed = self.slug or self.title or "article"
+        return self.COVER_THEMES[sum(ord(char) for char in seed) % len(self.COVER_THEMES)]
+
+    @property
+    def placeholder_cover(self):
+        return f"images/covers/{self.cover_theme}.svg"
+
+    @property
+    def uses_external_cover(self):
+        return bool(self.cover_image_url and not self.cover_image)
 
 
 class Vote(models.Model):
