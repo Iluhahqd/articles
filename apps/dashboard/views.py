@@ -1,10 +1,13 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Count, Sum
+from django.http import Http404
+from django.views import View
 from django.views.generic import ListView, TemplateView
 
 from apps.articles.models import Article, Category, Tag
 from apps.articles.services import dashboard_statistics
 from apps.comments.models import Comment
+from apps.core.exporters import EXPORTS, export_all_zip_response, export_dataset_response
 from apps.users.models import User
 
 
@@ -66,3 +69,26 @@ class UserManagementView(AdminRequiredMixin, ListView):
 
 class ExportView(AdminRequiredMixin, TemplateView):
     template_name = "dashboard/export.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["exports"] = (
+            ("articles", "Статьи", "Публикации, статусы, категории, теги и метрики вовлеченности."),
+            ("users", "Пользователи", "Аккаунты, роли и количество связанных действий."),
+            ("comments", "Комментарии", "Тексты комментариев, авторы, статьи и статус модерации."),
+            ("favorites", "Избранное", "Связи пользователей с сохраненными статьями."),
+            ("votes", "Голоса", "Лайки и дизлайки пользователей по статьям."),
+        )
+        return context
+
+
+class ExportDatasetView(AdminRequiredMixin, View):
+    def get(self, request, dataset):
+        if dataset not in EXPORTS:
+            raise Http404("Набор данных не найден.")
+        return export_dataset_response(dataset)
+
+
+class ExportAllView(AdminRequiredMixin, View):
+    def get(self, request):
+        return export_all_zip_response()

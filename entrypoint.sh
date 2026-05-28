@@ -27,8 +27,8 @@ PY
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
 
-if [ "${LOAD_DEMO_DATA:-False}" = "True" ]; then
-    python manage.py seed_demo_data
+if [ "${LOAD_INITIAL_DATA:-${LOAD_DEMO_DATA:-False}}" = "True" ]; then
+    python manage.py seed_initial_data
 fi
 
 exec gunicorn config.wsgi:application --bind 0.0.0.0:8000

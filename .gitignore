@@ -10,3 +10,4 @@ venv/
 staticfiles/
 media/
 postgres_data/
+wheelhouse/*.whl

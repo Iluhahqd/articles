@@ -5,12 +5,13 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY wheelhouse/ /wheelhouse/
+RUN if [ -n "$(find /wheelhouse -name '*.whl' -print -quit)" ]; then \
+        pip install --no-cache-dir --no-index --find-links=/wheelhouse -r requirements.txt; \
+    else \
+        pip install --no-cache-dir --timeout 120 -r requirements.txt; \
+    fi
 
 COPY . .
 

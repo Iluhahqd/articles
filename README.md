@@ -24,7 +24,7 @@
 - Django Templates
 - Docker / Docker Compose
 
-## Структура проекта
+## Структура приложения
 
 ```text
 articles/
@@ -82,12 +82,12 @@ http://localhost:8000
 - ожидает доступность PostgreSQL;
 - выполняет миграции;
 - собирает статику;
-- по переменной `LOAD_DEMO_DATA=True` загружает демонстрационные данные;
+- по переменной `LOAD_INITIAL_DATA=True` загружает стартовый набор данных;
 - запускает Gunicorn.
 
-## Демо-учетные записи
+## Стартовые учетные записи
 
-После запуска с `LOAD_DEMO_DATA=True` доступны:
+После запуска с `LOAD_INITIAL_DATA=True` доступны:
 
 - администратор: `admin / admin12345`
 - авторы: `author1 / author12345`, `author2 / author12345`, `author3 / author12345`
@@ -106,17 +106,19 @@ http://localhost:8000
 - `/dashboard/` - dashboard администратора
 - `/admin/` - стандартная административная панель Django
 
-## Тестовые данные
+## Стартовые данные
 
-Для ручной загрузки демо-данных:
+Для ручной загрузки стартового набора:
 
 ```bash
-python manage.py seed_demo_data
+python manage.py seed_initial_data
 ```
 
 ## Экспорт данных
 
 - CSV-экспорт списка статей: `/articles/export/csv/`
+- CSV-экспорт статей, пользователей, комментариев, избранного и голосов: `/dashboard/export/`
+- ZIP-архив со всеми CSV: `/dashboard/export/all/`
 - подготовлен каркас сервиса `apps/articles/pdf_export.py` для дальнейшего PDF-экспорта одной статьи
 
 ## Замечания по ролям
@@ -133,6 +135,6 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py seed_demo_data
+python manage.py seed_initial_data
 python manage.py runserver
 ```

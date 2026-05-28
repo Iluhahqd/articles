@@ -1,11 +1,9 @@
-import csv
-
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F, Q
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
@@ -13,6 +11,7 @@ from apps.articles.forms import ArticleForm
 from apps.articles.models import Article, Category, Favorite, Tag, Vote
 from apps.comments.forms import CommentForm
 from apps.comments.models import Comment
+from apps.core.exporters import articles_export_data, csv_response
 from apps.core.mixins import AuthorOrAdminRequiredMixin, RoleRequiredMixin
 from apps.users.models import User
 
@@ -51,7 +50,21 @@ class FilteredArticleListMixin:
         return queryset.distinct().order_by(*ordering_map.get(sort, ordering_map["newest"]))
 
 
-class ArticleListView(FilteredArticleListMixin, ListView):
+class FavoriteContextMixin:
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context["favorite_article_ids"] = set()
+        if user.is_authenticated:
+            articles = context.get("articles") or context.get("object_list") or []
+            article_ids = [article.pk for article in articles]
+            context["favorite_article_ids"] = set(
+                Favorite.objects.filter(user=user, article_id__in=article_ids).values_list("article_id", flat=True)
+            )
+        return context
+
+
+class ArticleListView(FavoriteContextMixin, FilteredArticleListMixin, ListView):
     model = Article
     template_name = "articles/article_list.html"
     context_object_name = "articles"
@@ -193,7 +206,7 @@ class MyArticleListView(RoleRequiredMixin, ListView):
         return queryset.filter(author=self.request.user).order_by("-updated_at")
 
 
-class FavoriteListView(LoginRequiredMixin, ListView):
+class FavoriteListView(FavoriteContextMixin, LoginRequiredMixin, ListView):
     template_name = "articles/favorites.html"
     context_object_name = "articles"
     paginate_by = 9
@@ -205,6 +218,7 @@ class FavoriteListView(LoginRequiredMixin, ListView):
             .filter(favorited_by__user=self.request.user)
             .select_related("author", "category")
             .prefetch_related("tags")
+            .order_by("-favorited_by__created_at")
         )
 
 
@@ -239,6 +253,9 @@ class FavoriteToggleView(LoginRequiredMixin, View):
         else:
             favorite.delete()
             messages.info(request, "Статья удалена из избранного.")
+        next_url = request.POST.get("next") or request.META.get("HTTP_REFERER")
+        if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+            return redirect(next_url)
         return redirect(article.get_absolute_url())
 
 
@@ -247,23 +264,5 @@ def export_articles_csv(request):
         messages.error(request, "Экспорт доступен только администратору.")
         return redirect("users:login")
 
-    response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = 'attachment; filename="articles_export.csv"'
-    writer = csv.writer(response)
-    writer.writerow(["ID", "Title", "Author", "Status", "Category", "Published At", "Views", "Rating"])
-
-    articles = Article.objects.with_engagement().select_related("author", "category")
-    for article in articles:
-        writer.writerow(
-            [
-                article.id,
-                article.title,
-                article.author.username,
-                article.get_status_display(),
-                article.category.name if article.category else "",
-                article.published_at,
-                article.views_count,
-                getattr(article, "rating", 0),
-            ]
-        )
-    return response
+    headers, rows = articles_export_data()
+    return csv_response("articles_export.csv", headers, rows)

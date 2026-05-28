@@ -29,7 +29,7 @@
                 </div>
                 <div class="article-meta-card">
                     <div class="small text-muted">Метрики</div>
-                    <div class="fw-semibold">{{ article.views_count }} просмотров · {{ article.rating|default:0 }} рейтинг</div>
+                    <div class="fw-semibold">{{ article.views_count }} просмотров · {{ article.rating|default:0 }} рейтинг · {{ article.favorites_count|default:0 }} избранное</div>
                 </div>
             </div>
         </div>
@@ -163,7 +163,7 @@
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
                 <h2 class="h5 mb-3">О материале</h2>
-                <div class="small text-muted mb-3">Материал оформлен как оригинальная редакционная статья. В проекте для части публикаций используются лицензируемые фото с указанием источника.</div>
+                <div class="small text-muted mb-3">Материал оформлен как оригинальная редакционная статья. Для части публикаций используются лицензируемые фото с указанием источника.</div>
                 <div class="d-grid gap-2">
                     <a class="btn btn-outline-dark" href="{% url 'articles:author_detail' article.author.username %}">Профиль автора</a>
                     <a class="btn btn-outline-secondary" href="{% url 'articles:list' %}">Все статьи</a>

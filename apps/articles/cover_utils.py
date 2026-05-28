@@ -51,7 +51,7 @@ def download_cover_to_article(article, timeout=20):
             article.cover_image_url,
             timeout=timeout,
             headers={
-                "User-Agent": "ArticleHubBot/1.0 (+educational demo project)",
+                "User-Agent": "ArticleHubBot/1.0 (+https://articlehub.local)",
                 "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
             },
             allow_redirects=True,
