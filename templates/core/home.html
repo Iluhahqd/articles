@@ -184,21 +184,4 @@
     </div>
 </section>
 
-<section class="cta-panel p-4 p-lg-5" data-reveal>
-    <div class="row align-items-center g-4">
-        <div class="col-lg-8">
-            <span class="section-label bg-white text-dark">Новый материал</span>
-            <h2 class="display-6 mb-3">Платформа уже готова для публикаций, обсуждений и управляемого роста</h2>
-            <p class="mb-0 text-white-50">Платформа готова для публикаций, обсуждений и управляемого роста: запуск через Docker, роли пользователей, аналитика, экспорт и аккуратный интерфейс уже на месте.</p>
-        </div>
-        <div class="col-lg-4 d-flex flex-wrap gap-2 justify-content-lg-end">
-            <a class="btn btn-light btn-lg" href="{% url 'articles:list' %}">Читать статьи</a>
-            {% if request.user.is_authenticated and request.user.is_author %}
-                <a class="btn btn-outline-light btn-lg" href="{% url 'articles:create' %}">Создать статью</a>
-            {% else %}
-                <a class="btn btn-outline-light btn-lg" href="{% url 'users:register' %}">Присоединиться</a>
-            {% endif %}
-        </div>
-    </div>
-</section>
 {% endblock %}
